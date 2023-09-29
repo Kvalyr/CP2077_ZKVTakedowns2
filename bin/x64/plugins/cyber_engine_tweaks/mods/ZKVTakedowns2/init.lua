@@ -17,11 +17,12 @@ registerForEvent("onInit", function()
     TweakDB:SetFlat("Takedown.Kv_StealthFinisher.rewards", TweakDB:GetFlat("Takedown.Takedown.rewards"))
 
     local instigatorPrereqs = TweakDB:GetFlat("Takedown.Grapple.instigatorPrereqs") -- Use grapple's prereqs as our basis
+    table.insert(instigatorPrereqs, "Prereqs.MeleeWeaponHeldPrereq")
+    local flatKey_instigatorPrereqs = "Takedown.Kv_StealthFinisher.instigatorPrereqs"
+    local success = TweakDB:SetFlat(flatKey_instigatorPrereqs, instigatorPrereqs)
 
-    -- Make takedown prompt only show when a weapon is held
-    -- table.insert(instigatorPrereqs, "Prereqs.MeleeWeaponHeldPrereq")
-
-    local flatKey = "Takedown.Kv_StealthFinisher.instigatorPrereqs"
-    local success = TweakDB:SetFlat(flatKey, instigatorPrereqs)
-
+    local targetPrereqs = TweakDB:GetFlat("Takedown.Kv_StealthFinisher.targetPrereqs")
+    table.insert(targetPrereqs, "Takedown.IsTargetInAcceptableState")
+    local flatKey_targetPrereqs = "Takedown.Kv_StealthFinisher.targetPrereqs"
+    local success = TweakDB:SetFlat(flatKey_targetPrereqs, targetPrereqs)
 end)
