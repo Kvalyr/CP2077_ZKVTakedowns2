@@ -61,29 +61,29 @@ public final static func ZKV_GetFinisherNameBasedOnWeapon(const target: ref<Game
     i = ArraySize(weaponTags) - 1;
     while i >= 0 {
         if GameInstance.GetGameEffectSystem(instigator.GetGame()).HasEffect(n"playFinisher", weaponTags[i]) {
-        finisherName = weaponTags[i];
-        break;
+            finisherName = weaponTags[i];
+            break;
         };
         i -= 1;
     };
     if IsNameValid(finisherName) {
         angle = Vector4.GetAngleBetween(instigator.GetWorldForward(), target.GetWorldForward());
         if hasFromBack && AbsF(angle) < 90.00 {
-        finisher = NameToString(finisherName);
-        finisher += "_Back";
-        finisherName = StringToName(finisher);
-        return true;
+            finisher = NameToString(finisherName);
+            finisher += "_Back";
+            finisherName = StringToName(finisher);
+            return true;
         };
         if hasFromFront && AbsF(angle) >= 90.00 {
-        return true;
+            return true;
         };
     };
     return false;
 }
 
-// public final static func ZKV_IsEffectTagInEffectSet(activator: wref<GameObject>, effectSetName: CName, effectTag: CName) -> Bool {
-//     return GameInstance.GetGameEffectSystem(activator.GetGame()).HasEffect(effectSetName, effectTag);
-// }
+public final static func ZKV_IsEffectTagInEffectSet(activator: wref<GameObject>, effectSetName: CName, effectTag: CName) -> Bool {
+    return GameInstance.GetGameEffectSystem(activator.GetGame()).HasEffect(effectSetName, effectTag);
+}
 
 @replaceMethod(LocomotionTakedownEvents)
 protected final func SelectSyncedAnimationAndExecuteAction(stateContext: ref<StateContext>, scriptInterface: ref<StateGameScriptInterface>, owner: ref<GameObject>, target: ref<GameObject>, action: CName) -> Void {
@@ -94,49 +94,49 @@ protected final func SelectSyncedAnimationAndExecuteAction(stateContext: ref<Sta
 
     switch this.GetTakedownAction(stateContext) {
         case ETakedownActionType.GrappleFailed:
-        TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, gameEffectName, action, "");
-        break;
+            TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, gameEffectName, action, "");
+            break;
         case ETakedownActionType.TargetDead:
-        syncedAnimName = n"grapple_sync_death";
-        break;
+            syncedAnimName = n"grapple_sync_death";
+            break;
         case ETakedownActionType.BreakFree:
-        syncedAnimName = n"grapple_sync_recover";
-        break;
+            syncedAnimName = n"grapple_sync_recover";
+            break;
         case ETakedownActionType.Takedown:
-        syncedAnimName = this.SelectRandomSyncedAnimation(stateContext);
-        effectTag = n"kill";
-        (target as NPCPuppet).SetMyKiller(owner);
-        break;
-        case ETakedownActionType.TakedownNonLethal:
-        if stateContext.GetConditionBool(n"CrouchToggled") {
-            syncedAnimName = n"grapple_sync_nonlethal_crouch";
-        } else {
             syncedAnimName = this.SelectRandomSyncedAnimation(stateContext);
-        };
-        effectTag = n"setUnconscious";
-        break;
+            effectTag = n"kill";
+            (target as NPCPuppet).SetMyKiller(owner);
+            break;
+        case ETakedownActionType.TakedownNonLethal:
+            if stateContext.GetConditionBool(n"CrouchToggled") {
+                syncedAnimName = n"grapple_sync_nonlethal_crouch";
+            } else {
+                syncedAnimName = this.SelectRandomSyncedAnimation(stateContext);
+            };
+            effectTag = n"setUnconscious";
+            break;
         case ETakedownActionType.TakedownNetrunner:
-        syncedAnimName = n"personal_link_takedown_01";
-        effectTag = n"setUnconsciousTakedownNetrunner";
-        break;
+            syncedAnimName = n"personal_link_takedown_01";
+            effectTag = n"setUnconsciousTakedownNetrunner";
+            break;
         case ETakedownActionType.TakedownMassiveTarget:
-        TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, gameEffectName, action, "");
-        effectTag = n"setUnconsciousTakedownMassiveTarget";
-        break;
+            TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, gameEffectName, action, "");
+            effectTag = n"setUnconsciousTakedownMassiveTarget";
+            break;
         case ETakedownActionType.AerialTakedown:
-        TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, gameEffectName, this.SelectAerialTakedownWorkspot(scriptInterface, owner, target, true, true, false, false, action));
-        effectTag = n"setUnconsciousAerialTakedown";
-        break;
+            TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, gameEffectName, this.SelectAerialTakedownWorkspot(scriptInterface, owner, target, true, true, false, false, action));
+            effectTag = n"setUnconsciousAerialTakedown";
+            break;
         case ETakedownActionType.BossTakedown:
-        TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, gameEffectName, this.SelectSyncedAnimationBasedOnPhase(stateContext, target), "");
-        effectTag = this.SetEffectorBasedOnPhase(stateContext);
-        syncedAnimName = this.GetSyncedAnimationBasedOnPhase(stateContext);
-        StatusEffectHelper.ApplyStatusEffect(target, t"BaseStatusEffect.BossTakedownCooldown");
-        target.GetTargetTrackerComponent().AddThreat(owner, true, owner.GetWorldPosition(), 1.00, 10.00, false);
-        break;
+            TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, gameEffectName, this.SelectSyncedAnimationBasedOnPhase(stateContext, target), "");
+            effectTag = this.SetEffectorBasedOnPhase(stateContext);
+            syncedAnimName = this.GetSyncedAnimationBasedOnPhase(stateContext);
+            StatusEffectHelper.ApplyStatusEffect(target, t"BaseStatusEffect.BossTakedownCooldown");
+            target.GetTargetTrackerComponent().AddThreat(owner, true, owner.GetWorldPosition(), 1.00, 10.00, false);
+            break;
         case ETakedownActionType.ForceShove:
-        syncedAnimName = n"grapple_sync_shove";
-        break;
+            syncedAnimName = n"grapple_sync_shove";
+            break;
 
         // Kv
         // Repurpose unused KillTarget enumValue as Melee-weapon-takedown
@@ -147,6 +147,15 @@ protected final func SelectSyncedAnimationAndExecuteAction(stateContext: ref<Sta
 
             ZKV_GetFinisherNameBasedOnWeapon(target, owner, ArrayContains(weapontags, n"FinisherFront"), ArrayContains(weapontags, n"FinisherBack"), effectTag);
             TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, n"playFinisher", effectTag);
+           StatusEffectHelper.ApplyStatusEffect(target as ScriptedPuppet, t"BaseStatusEffect.MemoryWipeExitCombat");
+
+            // ZKVLog(NameToString(effectTag));
+            if !IsNameValid(effectTag) || !ZKV_IsEffectTagInEffectSet(owner, n"playFinisher", effectTag) {
+                // effectTag = n"finisher_default";  // Broken
+                // effectTag = n"KillTarget";  // Broken
+                effectTag = n"Wea_Fists";
+            }
+            // ZKVLog(NameToString(effectTag));
 
             (target as NPCPuppet).SetMyKiller(owner);
             break;
