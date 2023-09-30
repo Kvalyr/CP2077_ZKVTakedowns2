@@ -243,10 +243,12 @@ protected final func SelectSyncedAnimationAndExecuteAction(stateContext: ref<Sta
         this.SelectSyncedAnimationAndExecuteAction(stateContext, scriptInterface, scriptInterface.executionOwner, this.stateMachineInitData.target, actionName);
         this.SetLocomotionParameters(stateContext, scriptInterface);
         this.SetBlackboardIntVariable(scriptInterface, GetAllBlackboardDefs().PlayerStateMachine.Takedown, EnumInt(gamePSMTakedown.Takedown));
-        if !scriptInterface.HasStatFlag(gamedataStatType.CanTakedownSilently) {
-            // ZKVLog(s"ZKV - TakedownExecuteTakedownEvents.OnEnter() - NOT gamedataStatType.CanTakedownSilently");
-            this.TriggerNoiseStim(scriptInterface.executionOwner, TakedownUtils.TakedownActionNameToEnum(actionName));
-        };
+        // Kv
+        // Make takedowns completely silent? This is overkill, but..
+        // if !scriptInterface.HasStatFlag(gamedataStatType.CanTakedownSilently) {
+        //     this.TriggerNoiseStim(scriptInterface.executionOwner, TakedownUtils.TakedownActionNameToEnum(actionName));
+        // };
+        // Kv End
         if Equals(this.GetTakedownAction(stateContext), ETakedownActionType.TakedownNonLethal) && stateContext.GetConditionBool(n"CrouchToggled") {
             scriptInterface.SetAnimationParameterFloat(n"crouch", 1.00);
         };
