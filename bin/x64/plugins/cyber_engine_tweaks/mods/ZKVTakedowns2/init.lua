@@ -3,12 +3,11 @@
 
 -- Change this to 'true' to enable 'stealth' kills from behind during combat
 local allowFinishersInCombat = false
-
+-- local allowFinishersWithRangedWeapons = true -- Broken - Don't change
 
 -------------------------------------------------------------------------------
 
 registerForEvent("onInit", function()
-
     -- Set up new interaction at same interaction layer as Grapple, using Choice2 (Grapple uses Choice1)
     TweakDB:CloneRecord("Interactions.Kv_StealthFinisher", "Interactions.NewPerkFinish")
     TweakDB:SetFlat("Interactions.Kv_StealthFinisher.action", "Choice2")
@@ -23,18 +22,20 @@ registerForEvent("onInit", function()
     -- Mimic the rewards flat of the Takedown.Takedown objectAction Record so that we properly award Shinobi XP on takedowns
     TweakDB:SetFlat("Takedown.Kv_StealthFinisher.rewards", TweakDB:GetFlat("Takedown.Takedown.rewards"))
 
-
     local instigatorPrereqs = TweakDB:GetFlat("Takedown.Grapple.instigatorPrereqs") -- Use grapple's prereqs as our basis
-    table.insert(instigatorPrereqs, "Prereqs.MeleeWeaponHeldPrereq")
+    -- if not allowFinishersWithRangedWeapons then
+        table.insert(instigatorPrereqs, "Prereqs.MeleeWeaponHeldPrereq")
+    -- end
     local flatKey_instigatorPrereqs = "Takedown.Kv_StealthFinisher.instigatorPrereqs"
-    local success = TweakDB:SetFlat(flatKey_instigatorPrereqs, instigatorPrereqs)
+    local instigatorPrereqsSuccess = TweakDB:SetFlat(flatKey_instigatorPrereqs, instigatorPrereqs)
 
     local targetPrereqs = TweakDB:GetFlat("Takedown.Kv_StealthFinisher.targetPrereqs")
     if not allowFinishersInCombat then
         table.insert(targetPrereqs, "Takedown.IsTargetInAcceptableState")
     end
     local flatKey_targetPrereqs = "Takedown.Kv_StealthFinisher.targetPrereqs"
-    local success = TweakDB:SetFlat(flatKey_targetPrereqs, targetPrereqs)
+    local targetPrereqsSuccess = TweakDB:SetFlat(flatKey_targetPrereqs, targetPrereqs)
 
+    print(string.format("ZKVTD Init done - instigatorPrereqsSuccess: %s, targetPrereqsSuccess: %s, allowFinishersInCombat: %s", instigatorPrereqsSuccess, targetPrereqsSuccess, allowFinishersInCombat))
 
 end)
