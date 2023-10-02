@@ -148,8 +148,11 @@ protected final func SelectSyncedAnimationAndExecuteAction(stateContext: ref<Sta
             ZKV_GetFinisherNameBasedOnWeapon(target, owner, ArrayContains(weapontags, n"FinisherFront"), ArrayContains(weapontags, n"FinisherBack"), effectTag);
             TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, n"playFinisher", effectTag);
 
-           // Apply memory wipe debuff to targe to make them 'blind' and clear their threat-tracking
+           // Apply memory wipe debuff to target to make them 'blind' and clear their threat-tracking
            StatusEffectHelper.ApplyStatusEffect(target as ScriptedPuppet, t"BaseStatusEffect.MemoryWipeExitCombat");
+
+           // Apply blind debuff to ensure they can't see V
+           StatusEffectHelper.ApplyStatusEffect(target as ScriptedPuppet, t"BaseStatusEffect.Blind");
 
            // Apply 'Gag' debuff (same as the game applies when hitting a target with the 'Gag Order' perk) to prevent them calling reinforcements while being killed
            StatusEffectHelper.ApplyStatusEffect(target as ScriptedPuppet, t"BaseStatusEffect.Gag");
