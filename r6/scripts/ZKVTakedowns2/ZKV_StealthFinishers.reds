@@ -1,7 +1,7 @@
-public static func ZKVLog(const str: script_ref<String>) -> Void {
-    //   LogChannel(n"DEBUG", "ZKVTD: " + str);
-    FTLog(s"ZKVTD2: " + str);
-}
+module ZKVTD
+
+import ZKVTD.ZKVTD_Utils
+
 
 @replaceMethod(ScriptedPuppetPS)
   public final func DetermineInteractionState(interaction: ref<InteractionComponent>, context: GetActionsContext, objectActionsCallbackController: wref<gameObjectActionsCallbackController>) -> Void {
@@ -33,57 +33,6 @@ public static func ZKVLog(const str: script_ref<String>) -> Void {
     this.PushChoicesToInteractionComponent(interaction, context, choices);
   }
 
-
-// Static version of FinisherAttackEvents.GetFinisherNameBasedOnWeapon()
-public final static func ZKV_GetFinisherNameBasedOnWeapon(const target: ref<GameObject>, const instigator: ref<GameObject>, const hasFromFront: Bool, const hasFromBack: Bool, out finisherName: CName) -> Bool {
-    let angle: Float;
-    let finisher: String;
-    let i: Int32;
-    let weaponRecord: ref<Item_Record>;
-    let weaponTags: array<CName>;
-    finisherName = n"finisher_default";
-    let weapon: ref<WeaponObject> = GameObject.GetActiveWeapon(instigator);
-
-    // ZKVLog(s"ZKV_GetFinisherNameBasedOnWeapon");
-
-    if !IsDefined(weapon) {
-        return false;
-    };
-    weaponRecord = TweakDBInterface.GetWeaponItemRecord(ItemID.GetTDBID(weapon.GetItemID()));
-    if !IsDefined(weaponRecord) {
-        return true;
-    };
-    finisherName = weaponRecord.ItemType().Name();
-    if Equals(weaponRecord.ItemType().Type(), gamedataItemType.Wea_Sword) {
-        finisherName = EnumValueToName(n"gamedataItemType", 82l);
-    };
-    weaponTags = weaponRecord.Tags();
-    i = ArraySize(weaponTags) - 1;
-    while i >= 0 {
-        if GameInstance.GetGameEffectSystem(instigator.GetGame()).HasEffect(n"playFinisher", weaponTags[i]) {
-            finisherName = weaponTags[i];
-            break;
-        };
-        i -= 1;
-    };
-    if IsNameValid(finisherName) {
-        angle = Vector4.GetAngleBetween(instigator.GetWorldForward(), target.GetWorldForward());
-        if hasFromBack && AbsF(angle) < 90.00 {
-            finisher = NameToString(finisherName);
-            finisher += "_Back";
-            finisherName = StringToName(finisher);
-            return true;
-        };
-        if hasFromFront && AbsF(angle) >= 90.00 {
-            return true;
-        };
-    };
-    return false;
-}
-
-public final static func ZKV_IsEffectTagInEffectSet(activator: wref<GameObject>, effectSetName: CName, effectTag: CName) -> Bool {
-    return GameInstance.GetGameEffectSystem(activator.GetGame()).HasEffect(effectSetName, effectTag);
-}
 
 @replaceMethod(LocomotionTakedownEvents)
 protected final func SelectSyncedAnimationAndExecuteAction(stateContext: ref<StateContext>, scriptInterface: ref<StateGameScriptInterface>, owner: ref<GameObject>, target: ref<GameObject>, action: CName) -> Void {
@@ -141,31 +90,11 @@ protected final func SelectSyncedAnimationAndExecuteAction(stateContext: ref<Sta
         // Kv
         // Repurpose unused KillTarget enumValue as Melee-weapon-takedown
         case ETakedownActionType.KillTarget:
-            let weapon: ref<WeaponObject> = GameObject.GetActiveWeapon(owner as PlayerPuppet);
-            let weaponRecord: ref<Item_Record> = TweakDBInterface.GetWeaponItemRecord(ItemID.GetTDBID(weapon.GetItemID()));
-            let weapontags: array<CName> = weaponRecord.Tags();
-
-            ZKV_GetFinisherNameBasedOnWeapon(target, owner, ArrayContains(weapontags, n"FinisherFront"), ArrayContains(weapontags, n"FinisherBack"), effectTag);
-            TakedownGameEffectHelper.FillTakedownData(scriptInterface.executionOwner, owner, target, n"playFinisher", effectTag);
-
-           // Apply memory wipe debuff to target to make them 'blind' and clear their threat-tracking
-           StatusEffectHelper.ApplyStatusEffect(target as ScriptedPuppet, t"BaseStatusEffect.MemoryWipeExitCombat");
-
-           // Apply blind debuff to ensure they can't see V
-           StatusEffectHelper.ApplyStatusEffect(target as ScriptedPuppet, t"BaseStatusEffect.Blind");
-
-           // Apply 'Gag' debuff (same as the game applies when hitting a target with the 'Gag Order' perk) to prevent them calling reinforcements while being killed
-           StatusEffectHelper.ApplyStatusEffect(target as ScriptedPuppet, t"BaseStatusEffect.Gag");
-
-            // ZKVLog(NameToString(effectTag));
-            if !IsNameValid(effectTag) || !ZKV_IsEffectTagInEffectSet(owner, n"playFinisher", effectTag) {
-                // effectTag = n"finisher_default";  // Broken
-                // effectTag = n"KillTarget";  // Broken
-                effectTag = n"Wea_Fists";
+            // ZKVTD_Present should return null if ZKVTD2 is not installed/available
+            let ZKVTD_Present: ref<ZKVTD_Utils> = new ZKVTD_Utils();
+            if ZKVTD_Present != null {
+                effectTag = ZKVTD_Utils.ETakedownActionType_KillTarget(scriptInterface, owner, target, effectTag);
             }
-            // ZKVLog(NameToString(effectTag));
-
-            (target as NPCPuppet).SetMyKiller(owner);
             break;
         // Kv End
 
@@ -187,7 +116,7 @@ protected final func SelectSyncedAnimationAndExecuteAction(stateContext: ref<Sta
 
 @replaceMethod(TakedownUtils)
     public final static func TakedownActionNameToEnum(actionName: CName) -> ETakedownActionType {
-        // ZKVLog(s"ZKV - TakedownActionNameToEnum() - actionName: " + NameToString(actionName));
+        // ZKV_Takedowns.Log(s"ZKV - TakedownActionNameToEnum() - actionName: " + NameToString(actionName));
         switch actionName {
             case n"GrappleFailed":
                 return ETakedownActionType.GrappleFailed;
@@ -222,10 +151,10 @@ protected final func SelectSyncedAnimationAndExecuteAction(stateContext: ref<Sta
 
             // Kv
             case n"Kv_MeleeTakedown":
-                // ZKVLog(s"ZKV - TakedownActionNameToEnum() - actionName: Kv_MeleeTakedown");
+                // ZKV_Takedowns.Log(s"ZKV - TakedownActionNameToEnum() - actionName: Kv_MeleeTakedown");
                 return ETakedownActionType.KillTarget;
             case n"Kv_StealthFinisher":
-                // ZKVLog(s"ZKV - TakedownActionNameToEnum() - actionName: Kv_StealthFinisher");
+                // ZKV_Takedowns.Log(s"ZKV - TakedownActionNameToEnum() - actionName: Kv_StealthFinisher");
                 return ETakedownActionType.KillTarget;
             // Kv End
 
@@ -238,7 +167,7 @@ protected final func SelectSyncedAnimationAndExecuteAction(stateContext: ref<Sta
     public func OnEnter(stateContext: ref<StateContext>, scriptInterface: ref<StateGameScriptInterface>) -> Void {
         let actionName: CName;
         let weaponType: gamedataItemType;
-        // ZKVLog(s"TakedownExecuteTakedownEvents.OnEnter");
+        // ZKV_Takedowns.Log(s"TakedownExecuteTakedownEvents.OnEnter");
         if TakedownUtils.ShouldForceTakedown(scriptInterface) {
             actionName = n"TakedownNonLethal";
         } else {
