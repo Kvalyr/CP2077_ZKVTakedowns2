@@ -36,6 +36,9 @@ registerForEvent("onInit", function()
     local flatKey_targetPrereqs = "Takedown.Kv_StealthFinisher.targetPrereqs"
     local targetPrereqsSuccess = TweakDB:SetFlat(flatKey_targetPrereqs, targetPrereqs)
 
-    print(string.format("ZKVTD Init done - instigatorPrereqsSuccess: %s, targetPrereqsSuccess: %s, allowFinishersInCombat: %s", instigatorPrereqsSuccess, targetPrereqsSuccess, allowFinishersInCombat))
+    print(string.format(
+        "ZKVTD Init done - instigatorPrereqsSuccess: %s, targetPrereqsSuccess: %s, allowFinishersInCombat: %s",
+        instigatorPrereqsSuccess, targetPrereqsSuccess, allowFinishersInCombat
+    ))
 
 end)
